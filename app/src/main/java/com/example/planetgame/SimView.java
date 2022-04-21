@@ -57,7 +57,7 @@ public class SimView extends View {
 
     @Override
     public void onDraw(Canvas c){
-        Log.i("SimView", "redrawing canvas");
+        Log.v("SimView", "redrawing canvas");
         c.drawColor(Color.BLACK);
         sim_paint.setColor(Color.WHITE);
         for(Body i : bodies){

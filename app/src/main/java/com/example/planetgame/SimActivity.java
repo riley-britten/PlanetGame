@@ -59,9 +59,10 @@ public class SimActivity extends AppCompatActivity {
                 bodiesToRemove = new ArrayList<Body>();
                 bodiesToAdd = new ArrayList<Body>();
 
-                Log.i("SimActivity", "Updating positions");
+                Log.v("SimActivity", "Updating positions");
                 for (Body i : bodies) {
                     i.updatePos(bodies);
+                    Log.i("Body position", "" + i.getPos());
                     if(i.isOutOfBounds()) {
                         Log.i("Update", "removing body");
                         bodiesToRemove.add(i);
@@ -82,6 +83,7 @@ public class SimActivity extends AppCompatActivity {
             if(e.getAction() == MotionEvent.ACTION_DOWN) {
                 bodiesToAdd.add(new Body((double) e.getRawX(), (double) e.getRawY(),
                             10000, (double)width, (double)height));
+                Log.i("Adding body", "x: " + (double)e.getRawX() + ", y: " + (double)e.getRawY());
                 return true;
             }
             return false;
