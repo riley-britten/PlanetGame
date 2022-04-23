@@ -12,6 +12,7 @@ public class Body {
     private static final double MIN_R = 2;
     private static final double MAX_R = 50;
 
+    private boolean to_delete = false;
     private Vec2 pos, vel;
 
     public Body(Vec2 pos, Vec2 vel, double radius, double maxX, double maxY){
@@ -35,6 +36,18 @@ public class Body {
 
     public Vec2 getPos(){
         return pos;
+    }
+
+    public boolean shouldDelete(){
+        return to_delete;
+    }
+
+    public void addVel(Vec2 v){
+        vel = Vec2.plus(vel, v);
+    }
+
+    public void addMass(double m){
+        mass += m;
     }
 
     public double getMass(){
@@ -68,10 +81,14 @@ public class Body {
             if(i == this){
                 continue;
             }
-            if(Vec2.dist(pos, i.pos) < radius + i.getRadius()){
-                //Bodies collide
-                vel.x = collision(i).x;
-                vel.y = collision(i).y;
+            if(collideBeforeNextFrame(i) && mass <= i.getMass()
+                    && !i.shouldDelete()){
+                // Delete smaller body
+                to_delete = true;
+                // Add momentum of smaller body to larger
+                vel = vel.scale(mass/(mass + i.getMass()));
+                i.addVel(vel);
+                i.addMass(mass);
                 break;
             }else{
                 // Bodies don't collide, only change in velocity is from gravity
@@ -79,9 +96,27 @@ public class Body {
             }
         }
         pos = Vec2.plus(pos, vel);
+        // Since mass can change have to update radius to match
+        radius = Math.pow(0.75 * mass/Math.PI, 1.0/3.0);
     }
 
-    private Vec2 collision(Body other){
+    private boolean collideBeforeNextFrame(Body other){
+        Vec2 q = other.getPos();
+        double a = Vec2.dot(vel, vel);
+        double b = 2 * vel.x * (pos.x - q.x) + 2 + vel.y * (pos.y - q.y);
+        double c = Math.pow(pos.x - q.x, 2) + Math.pow(pos.y - q.y, 2)
+                - Math.pow(radius + other.getRadius(), 2);
+        double t1 = (Math.sqrt(Math.pow(b, 2) - 4 * a * c) - b)/(2 * a);
+        double t2 = (Math.sqrt(Math.pow(b, 2) - 4 * a * c) + b)/(2 * a);
+        if(0 <= t1 && t1 < 1){
+            return true;
+        }else if(0 <= t2 && t2 < 1){
+            return true;
+        }
+        return false;
+    }
+
+/*    private Vec2 collision(Body other){
         double m1 = mass;
         double m2 = other.getMass();
         Vec2 x1 = pos;
@@ -98,11 +133,16 @@ public class Body {
         retVal = retVal.scale(coeff);
         retVal = Vec2.minus(v1, retVal);
         return retVal;
-    }
+    }*/
 
     private Vec2 accelerationFromGravity(Body other){
         Log.i("Computing acceleration", "Positions: " + pos + " " + other.getPos());
         double d = Vec2.dist(pos, other.pos);
+        if(d < radius + other.getRadius()){
+            // Don't compute acceleration from gravity if bodies
+            // have already collided.
+            return new Vec2(0, 0);
+        }
         double a = G * (other.mass/Math.pow(d, 2));
         Log.i("Computing acceleration", ""+Vec2.minus(other.pos, pos).scale(a/d));
         Log.i("Acceleration params", "d: " + d + ", a: " + a + ", v" + Vec2.minus(other.pos, pos).normalize());
