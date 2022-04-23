@@ -62,7 +62,7 @@ public class SimActivity extends AppCompatActivity {
                 for (Body i : bodies) {
                     i.updatePos(bodies);
                     Log.v("Body position", "" + i.getPos());
-                    if(i.isOutOfBounds()) {
+                    if(i.isOutOfBounds() || i.shouldDelete()) {
                         Log.i("Update", "removing body");
                         bodiesToRemove.add(i);
                     }
