@@ -21,7 +21,7 @@ public class SimActivity extends AppCompatActivity {
     // Controls how rapidly bodies increase in size per length of hold
     private static final double RAD_CONST = .03;
     // Controls how quickly bodies move relative to speed of swipe
-    private static final double VEL_CONST = .05;
+    private static final double VEL_CONST = .02;
 
     private SimView sim_view;
     private List<Body> bodies;
